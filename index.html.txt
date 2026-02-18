@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job CV Matcher</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Job Application Matcher</h1>
+        <p>Upload your CV and a job description to see how well they match.</p>
+        
+        <div class="upload-section">
+            <label for="cv-file">Upload CV (TXT file):</label>
+            <input type="file" id="cv-file" accept=".txt">
+        </div>
+        
+        <div class="upload-section">
+            <label for="job-file">Upload Job Description (TXT file):</label>
+            <input type="file" id="job-file" accept=".txt">
+        </div>
+        
+        <button id="match-btn">Calculate Match</button>
+        
+        <div id="results" class="results hidden">
+            <h2>Match Results</h2>
+            <p id="score"></p>
+            <p id="details"></p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/natural@6.5.0/lib/natural.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

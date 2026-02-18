@@ -1,0 +1,64 @@
+document.getElementById('match-btn').addEventListener('click', function() {
+    const cvFile = document.getElementById('cv-file').files[0];
+    const jobFile = document.getElementById('job-file').files[0];
+    
+    if (!cvFile || !jobFile) {
+        alert('Please upload both files.');
+        return;
+    }
+    
+    const readerCV = new FileReader();
+    const readerJob = new FileReader();
+    
+    readerCV.onload = function(e) {
+        const cvText = e.target.result.toLowerCase();
+        readerJob.onload = function(e) {
+            const jobText = e.target.result.toLowerCase();
+            const matchScore = calculateMatch(cvText, jobText);
+            displayResults(matchScore, cvText, jobText);
+        };
+        readerJob.readAsText(jobFile);
+    };
+    readerCV.readAsText(cvFile);
+});
+
+function calculateMatch(cvText, jobText) {
+    // Simple TF-IDF and cosine similarity using natural.js
+    const TfIdf = natural.TfIdf;
+    const tfidf = new TfIdf();
+    
+    tfidf.addDocument(cvText);
+    tfidf.addDocument(jobText);
+    
+    const cvVector = tfidf.listTerms(0).map(term => ({ term: term.term, tfidf: term.tfidf }));
+    const jobVector = tfidf.listTerms(1).map(term => ({ term: term.term, tfidf: term.tfidf }));
+    
+    // Create vectors
+    const allTerms = new Set([...cvVector.map(t => t.term), ...jobVector.map(t => t.term)]);
+    const cvVec = Array.from(allTerms).map(term => cvVector.find(t => t.term === term)?.tfidf || 0);
+    const jobVec = Array.from(allTerms).map(term => jobVector.find(t => t.term === term)?.tfidf || 0);
+    
+    // Cosine similarity
+    const dotProduct = cvVec.reduce((sum, a, i) => sum + a * jobVec[i], 0);
+    const magCV = Math.sqrt(cvVec.reduce((sum, a) => sum + a * a, 0));
+    const magJob = Math.sqrt(jobVec.reduce((sum, a) => sum + a * a, 0));
+    
+    return magCV && magJob ? (dotProduct / (magCV * magJob)) * 100 : 0;
+}
+
+function displayResults(score, cvText, jobText) {
+    const resultsDiv = document.getElementById('results');
+    const scoreP = document.getElementById('score');
+    const detailsP = document.getElementById('details');
+    
+    scoreP.textContent = `Match Score: ${score.toFixed(2)}%`;
+    detailsP.textContent = `Common keywords: ${findCommonKeywords(cvText, jobText).join(', ')}`;
+    
+    resultsDiv.classList.remove('hidden');
+}
+
+function findCommonKeywords(cvText, jobText) {
+    const cvWords = new Set(cvText.split(/\s+/).filter(word => word.length > 2));
+    const jobWords = new Set(jobText.split(/\s+/).filter(word => word.length > 2));
+    return [...cvWords].filter(word => jobWords.has(word)).slice(0, 10); // Top 10
+}
